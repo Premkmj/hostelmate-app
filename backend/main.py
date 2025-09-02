@@ -1,12 +1,24 @@
+import models, database
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-import models, database
+from fastapi.middleware.cors import CORSMiddleware
 
+# Create DB tables
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
 
+# Allow frontend to talk to backend (CORS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# DB session dependency
 def get_db():
     db = database.SessionLocal()
     try:
@@ -14,6 +26,7 @@ def get_db():
     finally:
         db.close()
 
+# User schema
 class UserCreate(BaseModel):
     username: str
     password: str
